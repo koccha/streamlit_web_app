@@ -21,11 +21,6 @@ with  st.form(key="oppai"):
     # テキストエリアの表示
     text_area_input = st.text_area("ASINリスト", height=300)
 
-    # 入力をリストに変換
-    asin_list = text_area_input.split('\n')
-    asin_list = [asin.strip() for asin in asin_list if asin.strip()]
-
-
     # ファイルアップロードのウィジェット
     uploaded_file = st.file_uploader("CSVファイルを選択してください", type=["csv"])
 
@@ -34,6 +29,11 @@ with  st.form(key="oppai"):
 
     # ファイルがアップロードされた場合
     if submit_btn:
+        # 入力をリストに変換
+        asin_list = text_area_input.split('\n')
+        asin_list = [asin.strip() for asin in asin_list if asin.strip()]
+        df_asin_list = pd.DataFrame(asin_list, columns=["ASIN"])
+
         # エンコードの検出
         encoding = detect_encoding(uploaded_file)
         
@@ -44,7 +44,7 @@ with  st.form(key="oppai"):
         df_priceter_x["SKU"] = df_priceter_x["SKU"].str.lstrip('="').str.rstrip('"')
         df_priceter_x["ASIN"] = df_priceter_x["ASIN"].str.lstrip('="').str.rstrip('"')
 
-        df = df_priceter_x[(df_priceter_x["ASIN"].isin(asin_list))]
+        df = df_asin_list.merge(df_priceter_x, on="ASIN", how="left")
         
         # データフレームの表示
         st.write("アップロードしたCSVファイルの内容:")
